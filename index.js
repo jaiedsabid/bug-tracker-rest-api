@@ -30,9 +30,8 @@ app.put('/api/bug/:id', (req, res) => {
     if(bug.isResolved) return res.status(400).send("The item is already solved");
 
     const {error} = validateSolution(req.body);
-    if(error) {
-        return res.status(400).send(error.details[0].message);
-    }
+    if(error) return res.status(400).send(error.details[0].message);
+
     bug.bugSolution = req.body.bugSolution;
     bug.isResolved = true;
     res.send(bug);
@@ -40,9 +39,8 @@ app.put('/api/bug/:id', (req, res) => {
 
 app.post('/api/bugs', (req, res) => {
     const {error} = validateInfo(req.body);
-    if(error) {
-        return res.status(400).send(error.details[0].message);
-    }
+    if(error) return res.status(400).send(error.details[0].message);
+
     const newBugItem = {
         id: BUGS.length+1,
         bugInfo: req.body.bugInfo,
