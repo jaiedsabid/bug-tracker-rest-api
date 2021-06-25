@@ -1,10 +1,12 @@
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const bugs = require('./routes/bugs');
 const home = require('./routes/home');
 
 
 app.use(express.json());
+app.use(cors());
 app.use(express.static('public'));
 app.use('/', home);
 app.use('/api/bugs', bugs);
