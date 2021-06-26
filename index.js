@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const mongoose = require('mongoose');
 const bugs = require('./routes/bugs');
 const home = require('./routes/home');
 
@@ -19,6 +20,16 @@ app.set('views', './views')
 
 // Config
 const PORT = process.env.PORT || 3000;
+const dbUSER = process.env.dbUSER;
+const dbPASS = process.env.dbPASS;
+
+// MongoDB
+mongoose.set('returnOriginal', false);
+mongoose.connect(`mongodb+srv://${dbUSER}:${dbPASS}@bug-tracker.qxllb.mongodb.net/bug_tracker?retryWrites=true&w=majority`, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+    .then(() => {console.log('Connected to MongoDB')}).catch(err => {console.log('Failed', err)});
 
 
 // Start Server

@@ -1,24 +1,26 @@
-const Joi = require('joi');
 const express = require('express');
 const router = express.Router();
+const {validateSolution, validateInfo} = require('../database/Bug');
 
 // Data
-let BUGS = require('../data/BUGS');
+const Bug = require('../database/Bug');
+
 
 // Routes
 
-router.get('/', (req, res) => {
-    res.send(JSON.stringify(BUGS));
+router.get('/', async (req, res) => {
+    const bugs = await Bug.find();
+    res.send(bugs);
 });
 
-router.get('/:id', (req, res) => {
-    const bug = BUGS.find(item => item.id === parseInt(req.params.id));
+router.get('/:id', async (req, res) => {
+    const bug = await Bug.findById(req.params.id);
     if(!bug) return res.status(404).send("The item not found with the given ID!");
     res.send(bug);
 });
 
-router.put('/:id', (req, res) => {
-    const bug = BUGS.find(item => item.id === parseInt(req.params.id));
+router.put('/:id', async (req, res) => {
+    const bug = await Bug.findById(req.params.id);
     if(!bug) return res.status(404).send("The item not found with the given ID!");
     if(bug.isResolved) return res.status(400).send("The item is already solved");
 
@@ -27,48 +29,27 @@ router.put('/:id', (req, res) => {
 
     bug.bugSolution = req.body.bugSolution;
     bug.isResolved = true;
+    await bug.save();
     res.send(bug);
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
     const {error} = validateInfo(req.body);
     if(error) return res.status(400).send(error.details[0].message);
 
-    const newBugItem = {
-        id: BUGS.length+1,
-        bugInfo: req.body.bugInfo,
-        isResolved: false,
-        bugSolution: ""
-    };
-    BUGS.push(newBugItem);
-    res.send(JSON.stringify(newBugItem));
+    const bugItem = new Bug({
+        bugInfo: req.body.bugInfo
+    });
+    const result = await bugItem.save();
+    res.send(result);
 });
 
-router.delete('/:id', (req, res) => {
-    const bug = BUGS.find(item => item.id === parseInt(req.params.id));
+router.delete('/:id', async (req, res) => {
+    const bug = await Bug.findByIdAndDelete(req.params.id);
     if(!bug) return res.status(404).send("The item not found with the given ID!");
 
-    const index = BUGS.indexOf(bug);
-    BUGS.splice(index, 1);
     res.send(bug);
-
 });
 
-// Validation functions
-function validateSolution(solution) {
-    const schema = Joi.object({
-        bugSolution: Joi.string().trim().min(1).required()
-    });
-    const result = schema.validate(solution);
-    return result;
-}
-
-function validateInfo(info) {
-    const schema = Joi.object({
-        bugInfo: Joi.string().trim().min(1).required()
-    });
-    const result = schema.validate(info);
-    return result;
-}
 
 module.exports = router;
